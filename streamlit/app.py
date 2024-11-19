@@ -1,8 +1,9 @@
 import streamlit as st
 import pandas as pd
 import pickle
+import os
 
-# Title and Styling
+# Configure the Streamlit app
 st.set_page_config(page_title="Stroke Prediction App", page_icon="🧠", layout="centered")
 st.markdown(
     """
@@ -22,16 +23,28 @@ st.markdown("Provide the following details in the sidebar to get a prediction.")
 # Load the trained model
 @st.cache_resource
 def load_model():
-    with open("lda_stroke_model.pkl", "rb") as file:
-        return pickle.load(file)
+    try:
+        model_path = os.path.join(os.path.dirname(__file__), "lda_stroke_model.pkl")
+        with open(model_path, "rb") as file:
+            return pickle.load(file)
+    except FileNotFoundError:
+        st.error("❌ Model file not found! Ensure `lda_stroke_model.pkl` is in the same directory as `app.py`.")
+        raise
+    except Exception as e:
+        st.error(f"❌ Error loading model: {e}")
+        raise
 
-model = load_model()
+# Load the model
+try:
+    model = load_model()
+except Exception as e:
+    st.stop()
 
-# Input Form - Sidebar
+# Sidebar for user inputs
 st.sidebar.title("Patient Details")
 st.sidebar.info("Fill in the patient's details below:")
 
-# Two-column layout for better organization
+# Collect user inputs in the sidebar
 with st.sidebar:
     age = st.number_input("🧓 Age (in years)", min_value=1, max_value=120, step=1)
     gender = st.radio("⚥ Gender", ["Male", "Female"])
@@ -56,21 +69,20 @@ with st.sidebar:
     )
     ever_married = st.radio("💍 Ever Married", ["No", "Yes"])
 
-# Mapping input to model-compatible format
+# Map user inputs to a DataFrame
 data = {
     "age": age,
-    "gender": 1 if gender == "Male" else 0,  # Adjust based on your dataset encoding
+    "gender": 1 if gender == "Male" else 0,  # Adjust encoding if necessary
     "hypertension": 1 if hypertension == "Yes" else 0,
     "heart_disease": 1 if heart_disease == "Yes" else 0,
     "avg_glucose_level": avg_glucose_level,
     "bmi": bmi,
-    "smoking_status": smoking_status,  # Leave as-is if handled by encoder
-    "Residence_type": Residence_type,  # Leave as-is if handled by encoder
-    "work_type": work_type,  # Leave as-is if handled by encoder
-    "ever_married": ever_married,  # Leave as-is if handled by encoder
+    "smoking_status": smoking_status,  # Handle if needed in preprocessing
+    "Residence_type": Residence_type,  # Handle if needed in preprocessing
+    "work_type": work_type,  # Handle if needed in preprocessing
+    "ever_married": ever_married,  # Handle if needed in preprocessing
 }
 
-# Convert to DataFrame
 input_df = pd.DataFrame([data])
 
 # Main Section
@@ -83,8 +95,9 @@ if st.button("🔍 Predict"):
         result = "🟢 No Stroke" if prediction[0] == 0 else "🔴 Stroke"
         st.success(f"The predicted result is: **{result}**")
     except Exception as e:
-        st.error(f"An error occurred during prediction: {str(e)}")
+        st.error(f"❌ An error occurred during prediction: {str(e)}")
 
+# Additional Information
 st.markdown("---")
 st.markdown(
     """
@@ -94,8 +107,6 @@ st.markdown(
     - **Health history** (hypertension, heart disease, BMI)
     - **Lifestyle factors** (smoking, work type, residence type)
     
-    Please consult a medical professional for personalized advice.
+    ⚠️ **Disclaimer:** This is a predictive tool and not a substitute for medical advice. Consult a healthcare provider for accurate diagnosis and treatment.
     """
 )
-
-
