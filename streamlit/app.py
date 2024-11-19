@@ -20,6 +20,16 @@ st.title("🧠 Stroke Prediction App")
 st.subheader("Predict the likelihood of stroke based on patient details.")
 st.markdown("Provide the following details in the sidebar to get a prediction.")
 
+# Try to import imblearn and catch potential errors
+try:
+    import imblearn
+except ImportError:
+    st.error(
+        "❌ The required library `imblearn` is not installed. "
+        "Please add `imbalanced-learn` to your `requirements.txt` file and redeploy."
+    )
+    st.stop()
+
 # Load the trained model
 @st.cache_resource
 def load_model():
@@ -110,3 +120,4 @@ st.markdown(
     ⚠️ **Disclaimer:** This is a predictive tool and not a substitute for medical advice. Consult a healthcare provider for accurate diagnosis and treatment.
     """
 )
+
