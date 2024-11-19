@@ -19,8 +19,7 @@ Target Variable: stroke (0 = No stroke, 1 = Stroke)
 📈 Results
 Best Model: Linear Discriminant Analysis
 ROC-AUC Score: 0.85 (example)
-🛡️ License
-This project is licensed under the MIT License. See the LICENSE file for details.
+
 
 💡 Acknowledgments
 data science brian
